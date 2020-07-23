@@ -15,7 +15,7 @@ import {PromResolve, PromReject} from "@elijahjcobb/prom-type";
 import * as WS from "ws";
 import {Neon} from "@element-ts/neon";
 
-export interface LiSocketConfig {
+export interface LiNodeSocketConfig {
 	address: string;
 	debug?: boolean;
 	bearer?: string;
@@ -30,7 +30,7 @@ export class LiNodeSocket<
 
 	public static logger: Neon = new Neon();
 
-	private constructor(config: LiSocketConfig, ws: WS, didReceiveId: () => void) {
+	private constructor(config: LiNodeSocketConfig, ws: WS, didReceiveId: () => void) {
 
 		if (config.debug) {
 			LiNodeSocket.logger.enable();
@@ -49,7 +49,7 @@ export class LiNodeSocket<
 
 	}
 
-	public static init<LC extends LiCommandRegistryStructure<LC>, RC extends LiCommandRegistryStructure<RC>, SC extends LiCommandRegistryStructure<SC> = any>(config: LiSocketConfig): Promise<LiNodeSocket<LC, RC, SC>> {
+	public static init<LC extends LiCommandRegistryStructure<LC>, RC extends LiCommandRegistryStructure<RC>, SC extends LiCommandRegistryStructure<SC> = any>(config: LiNodeSocketConfig): Promise<LiNodeSocket<LC, RC, SC>> {
 
 		if (config.debug) LiNodeSocket.logger.enable();
 
