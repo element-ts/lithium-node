@@ -10,7 +10,7 @@ import {
 	LiCommandHandlerParam, LiCommandHandlerReturn,
 	LiCommandName,
 	LiCommandRegistryStructure
-} from "../core/LiCommandRegistry";
+} from "@element-ts/lithium-core";
 import {PromResolve, PromReject} from "@elijahjcobb/prom-type";
 import * as WS from "ws";
 import {Neon} from "@element-ts/neon";

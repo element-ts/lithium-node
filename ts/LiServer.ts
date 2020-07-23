@@ -11,8 +11,7 @@ import {
 	LiCommandName,
 	LiCommandRegistry,
 	LiCommandRegistryStructure
-} from "../core/LiCommandRegistry";
-
+} from "@element-ts/lithium-core";
 import {LiBaseNodeSocket} from "./LiBaseNodeSocket";
 import * as WS from "ws";
 import * as Crypto from "crypto";

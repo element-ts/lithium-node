@@ -7,9 +7,9 @@
 
 import {
 	LiCommandRegistry,
-	LiCommandRegistryStructure
-} from "../core/LiCommandRegistry";
-import {LiSocket} from "../core/LiSocket";
+	LiCommandRegistryStructure,
+	LiSocket
+} from "@element-ts/lithium-core";
 import * as WS from "ws";
 
 export class LiBaseNodeSocket<
