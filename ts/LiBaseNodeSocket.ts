@@ -21,8 +21,8 @@ export class LiBaseNodeSocket<
 	public constructor(socket: WS, commandRegistry?: LiCommandRegistry<LC>, id: string = "", onDidReceiveId: ((() => void) | undefined) = undefined, allowPeerToPeer: boolean = false, debug?: boolean) {
 
 		super({
-			close: socket.close,
-			send: socket.send,
+			close: (() => socket.close()),
+			send: ((data, handler) => socket.send(data, handler)),
 			onMessage: (handler: (data: string) => void): void => {
 				socket.on("message", handler);
 			},
