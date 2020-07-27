@@ -29,7 +29,7 @@ export class LiServer<LC extends LiCommandRegistryStructure<LC>, RC extends LiCo
 	private server: WS.Server;
 	private readonly config: LiServerConfig;
 	private sockets: Map<string, LiBaseNodeSocket<any, any>>;
-	private readonly commandRegistry: LiCommandRegistry<LC>;
+	private readonly commandRegistry: LiCommandRegistry<LC, RC>;
 	public onSocketClose: ((socket: LiBaseNodeSocket<RC, LC>) => void) | undefined;
 	public onSocketOpen: ((socket: LiBaseNodeSocket<RC, LC>, req: HTTP.IncomingMessage) => Promise<void>) | undefined;
 	public static logger: Neon = new Neon();

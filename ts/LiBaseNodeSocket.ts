@@ -18,7 +18,7 @@ export class LiBaseNodeSocket<
 	SC extends LiCommandRegistryStructure<SC> = any
 > extends LiSocket<LC, RC, SC> {
 
-	public constructor(socket: WS, commandRegistry?: LiCommandRegistry<LC>, id: string = "", onDidReceiveId: ((() => void) | undefined) = undefined, allowPeerToPeer: boolean = false, debug?: boolean) {
+	public constructor(socket: WS, commandRegistry?: LiCommandRegistry<LC, RC>, id: string = "", onDidReceiveId: ((() => void) | undefined) = undefined, allowPeerToPeer: boolean = false, debug?: boolean) {
 
 		super({
 			close: (() => socket.close()),
