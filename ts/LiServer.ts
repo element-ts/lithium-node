@@ -43,13 +43,19 @@ export class LiServer<LC extends LiCommandRegistryStructure<LC>, RC extends LiCo
 			LiServer.logger.setTitle("@element-ts/lithium LiServer");
 		}
 
+		LiServer.logger.log("Generating command registry.");
 		this.commandRegistry = new LiCommandRegistry();
+		LiServer.logger.log("Starting server.");
 		this.server = new WS.Server({port: config.port});
+		LiServer.logger.log("Generating socket map.");
 		this.sockets = new Map<string, LiBaseNodeSocket<any, any>>();
 
+		LiServer.logger.log("Setting up peer-to-peer configuration.");
 		this.handlePeerToPeerSetup();
 
 		this.handleNewConnection = this.handleNewConnection.bind(this);
+
+		LiServer.logger.log("Ready for new connections.");
 		this.server.on("connection", this.handleNewConnection);
 
 
