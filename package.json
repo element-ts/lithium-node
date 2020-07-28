@@ -1,5 +1,5 @@
 {
-	"name": "@elijahjcobb/***",
+	"name": "@element-ts/lithium-node",
 	"version": "0.1.0",
 	"description": "",
 	"keywords": [],
@@ -19,7 +19,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/elijahjcobb/***.git"
+		"url": "git+https://github.com/element-ts/lithium-node.git"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -27,9 +27,9 @@
 	"author": "Elijah Cobb <elijah@elijahcobb.com> (https://elijahcobb.com/)",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/elijahjcobb/***/issues"
+		"url": "https://github.com/element-ts/lithium-node/issues"
 	},
-	"homepage": "https://github.com/elijahjcobb/***#readme",
+	"homepage": "https://github.com/element-ts/lithium-node#readme",
 	"dependencies": {
 		"ws": "latest",
 		"@types/ws": "latest",
