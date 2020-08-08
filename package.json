@@ -1,6 +1,6 @@
 {
   "name": "@element-ts/lithium-node",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "coming soon...",
   "keywords": [],
   "main": "js/index",
@@ -33,7 +33,7 @@
   "dependencies": {
     "ws": "latest",
     "@types/ws": "latest",
-    "@element-ts/lithium-core": "0.1.4"
+    "@element-ts/lithium-core": "0.1.5"
   },
   "devDependencies": {
     "@types/node": "latest",

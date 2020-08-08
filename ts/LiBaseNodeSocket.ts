@@ -18,22 +18,25 @@ export class LiBaseNodeSocket<
 	SC extends LiCommandRegistryStructure<SC> = any
 > extends LiSocket<LC, RC, SC> {
 
+	private socket: WS;
+
 	public constructor(socket: WS, commandRegistry?: LiCommandRegistry<LC, RC>, id: string = "", onDidReceiveId: ((() => void) | undefined) = undefined, allowPeerToPeer: boolean = false, debug?: boolean) {
 
-		super({
-			close: (() => socket.close()),
-			send: ((data, handler) => socket.send(data, handler)),
-			onMessage: (handler: (data: string) => void): void => {
-				socket.on("message", handler);
-			},
-			onError: (handler: (err: Error) => void): void => {
-				socket.on("error", handler);
-			},
-			onClose: (handler: (code?: number, reason?: string) => void): void => {
-				socket.on("close", handler);
-			}
-		}, commandRegistry, id, onDidReceiveId, allowPeerToPeer, debug);
+		super(commandRegistry, id, onDidReceiveId, allowPeerToPeer, debug);
 
+		this.socket = socket;
+		this.socket.on("message", this.handleSend);
+		this.socket.on("error", this.handleOnError);
+		this.socket.on("close", this.handleOnClose);
+
+	}
+
+	protected handleClose(): void {
+		this.socket.close();
+	}
+
+	protected handleSend(data: string, handler: (err?: Error) => void) {
+		this.socket.send(data, handler);
 	}
 
 }
