@@ -25,6 +25,9 @@ export class LiBaseNodeSocket<
 		super(commandRegistry, id, onDidReceiveId, allowPeerToPeer, debug);
 
 		this.socket = socket;
+		this.handleOnMessage = this.handleOnMessage.bind(this);
+		this.handleOnError = this.handleOnError.bind(this);
+		this.handleOnClose = this.handleOnClose.bind(this);
 		this.socket.on("message", this.handleOnMessage);
 		this.socket.on("error", this.handleOnError);
 		this.socket.on("close", this.handleOnClose);
