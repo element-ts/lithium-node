@@ -5,7 +5,7 @@
  * github.com/elijahjcobb
  */
 
-export * from "@element-ts/lithium-core";
+export * from "./core";
 export * from "./LiBaseNodeSocket";
 export * from "./LiNodeSocket";
 export * from "./LiServer";
