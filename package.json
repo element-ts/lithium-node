@@ -33,7 +33,10 @@
   "dependencies": {
     "ws": "latest",
     "@types/ws": "latest",
-    "@element-ts/lithium-core": "0.1.5"
+    "@element-ts/chlorine": "latest",
+    "@element-ts/oxygen": "latest",
+    "@elijahjcobb/prom-type": "latest",
+    "@element-ts/neon": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

@@ -5,142 +5,79 @@
  * github.com/elijahjcobb
  */
 
-import {
-	LiCommandHandlerParam, LiCommandHandlerReturn, LiCommandHandlerReturnPromisified,
-	LiCommandHandlerStructure,
-	LiCommandName,
-	LiCommandRegistry,
-	LiCommandRegistryStructure
-} from "./core";
-import {LiBaseNodeSocket} from "./LiBaseNodeSocket";
 import * as WS from "ws";
-import * as Crypto from "crypto";
-import {Neon} from "@element-ts/neon";
 import * as HTTP from "http";
-import {PromResolve} from "@elijahjcobb/prom-type";
+import * as Crypto from "crypto";
+import {ClCommander, CLRegistryStructure} from "@element-ts/chlorine";
+import {Neon} from "@element-ts/neon";
+import {LiSocket} from "./LiSocket";
+import {
+	ClCommandHandlerParam,
+	ClCommandHandlerReturnPromisified,
+	ClCommandHandlerStructure,
+	ClCommandName
+} from "@element-ts/chlorine/dts/ClRegistry";
 
 export interface LiServerConfig {
-	debug?: boolean;
 	port: number;
+	debug?: boolean;
 }
 
-export class LiServer<LC extends LiCommandRegistryStructure<LC>, RC extends LiCommandRegistryStructure<RC>> {
+export class LiServer<LC extends CLRegistryStructure<LC>, RC extends CLRegistryStructure<RC>> extends ClCommander<LC, RC, undefined> {
 
-	private server: WS.Server;
-	private readonly config: LiServerConfig;
-	private sockets: Map<string, LiBaseNodeSocket<any, any>>;
-	private readonly commandRegistry: LiCommandRegistry<LC, RC>;
-	public onSocketClose: ((socket: LiBaseNodeSocket<RC, LC>) => void) | undefined;
-	public onSocketOpen: ((socket: LiBaseNodeSocket<RC, LC>, req: HTTP.IncomingMessage) => Promise<void>) | undefined;
-	public static logger: Neon = new Neon();
+	private _server: WS.Server;
+	private _logger: Neon;
+	private _connections: Map<string, LiSocket<RC, LC>>;
 
 	public constructor(config: LiServerConfig) {
 
-		this.config = config;
+		super(undefined);
+
+		this._server = new WS.Server({port: config.port});
+		this._connections = new Map<string, LiSocket<RC, LC>>();
+		this._logger = new Neon();
 
 		if (config.debug) {
-			LiServer.logger.enable();
-			LiServer.logger.setTitle("@element-ts/lithium LiServer");
+			this._logger.enable();
+			this._logger.setTitle("@element-ts/lithium-node LiServer");
 		}
 
-		LiServer.logger.log("Generating command registry.");
-		this.commandRegistry = new LiCommandRegistry();
-		LiServer.logger.log("Starting server.");
-		this.server = new WS.Server({port: config.port});
-		LiServer.logger.log("Generating socket map.");
-		this.sockets = new Map<string, LiBaseNodeSocket<any, any>>();
-
-		LiServer.logger.log("Setting up peer-to-peer configuration.");
-		this.handlePeerToPeerSetup();
-
-		this.handleNewConnection = this.handleNewConnection.bind(this);
-
-		LiServer.logger.log("Ready for new connections.");
-		this.server.on("connection", this.handleNewConnection);
-
+		this._server.on("connection", this.handleOnConnection.bind(this));
+		this._server.on("error", this.handleOnError.bind(this));
 
 	}
 
-	private handlePeerToPeerSetup(): void {
-
-		// @ts-ignore
-		this.implement("invokeSibling", async(param: { param: any, id: string, command: LiCommandName<RC>}): Promise<any> => {
-
-			return this.invoke(param.id, param.command, param.param, true);
-
-		});
+	private generateId(): string {
+		let id: string = Crypto.randomBytes(8).toString("hex");
+		while (this._connections.has(id)) id = Crypto.randomBytes(8).toString("hex");
+		return id;
 	}
 
-	private handleNewConnection(ws: WS, req: HTTP.IncomingMessage): void {
+	private handleOnConnection(socket: WS, request: HTTP.IncomingMessage): void {
 
-		LiServer.logger.log(`Did receive new connection from ip: '${req.connection.remoteAddress}'.`);
+		const id: string = this.generateId();
 
-		let id: string = Crypto.randomBytes(16).toString("hex");
-		while (this.sockets.has(id)) id = Crypto.randomBytes(16).toString("hex");
-
-		const socket: LiBaseNodeSocket<any, any> = new LiBaseNodeSocket(ws, this.commandRegistry, id, undefined, undefined, this.config.debug);
-
-		socket.onClose = ((): void => {
-
-			this.sockets.delete(id);
-			if (this.onSocketClose) this.onSocketClose(socket);
-
+		socket.on("close", () => {
+			this._logger.log(`Socket with id: '${id}' did close.`);
+			this._connections.delete(id);
 		});
 
-		this.sockets.set(id, socket);
-		if (this.onSocketOpen) this.onSocketOpen(socket, req).catch((err: any): void => LiServer.logger.err(err));
+		this._connections.set(id, new LiSocket<RC, LC>(socket));
 
 	}
 
-	public getSockets(): IterableIterator<LiBaseNodeSocket<LC, RC>> {
+	private handleOnError(error: Error): void {
 
-		return this.sockets.values();
-
-	}
-
-	public broadcast<C extends LiCommandName<RC>>(command: C, param: LiCommandHandlerParam<RC, C>): Promise<{[socketId: string]: LiCommandHandlerReturn<RC, C> | undefined}> {
-		return new Promise((resolve: PromResolve<{[socketId: string]: LiCommandHandlerReturn<RC, C> | undefined}>): void => {
-
-			const map: {[socketId: string]: LiCommandHandlerReturn<RC, C> | undefined} = {};
-			let count: number = this.connectionCount();
-
-			function handler(socket: LiBaseNodeSocket<LC, RC>, returnValue?: LiCommandHandlerReturn<RC, C>): void {
-				count--;
-				map[socket.getId()] = returnValue;
-				if (count === 0) return resolve(map);
-			}
-
-			for (const socket of this.getSockets()) {
-				socket.invoke(command, param)
-					.then((returnValue: LiCommandHandlerReturn<RC, C>): void => handler(socket, returnValue))
-					.catch((err: any): void => {
-						LiServer.logger.err(err);
-						handler(socket);
-					});
-			}
-
-		});
-	}
-
-	public implement<C extends LiCommandName<LC>>(command: C, handler: LiCommandHandlerStructure<LC, RC, C>): void {
-		this.commandRegistry.implement(command, handler, true);
-	}
-
-	public invoke<C extends LiCommandName<RC>>(id: string, command: C, param: LiCommandHandlerParam<RC, C>, peerToPeer: boolean = false): LiCommandHandlerReturnPromisified<RC, C> | undefined {
-		return this.getSocket(id)?.invoke(command, param, peerToPeer);
-	}
-
-	public getSocket(id: string): LiBaseNodeSocket<LC, RC> | undefined {
-
-		return this.sockets.get(id);
+		this._logger.err(error);
 
 	}
 
-	public connectionCount(): number {
+	public implement<C extends ClCommandName<LC>>(command: C, handler: ClCommandHandlerStructure<LC, RC, C, R>): void {
 
-		return this.sockets.size;
+	}
+
+	public invoke<C extends ClCommandName<RC>>(command: C, param: ClCommandHandlerParam<RC, C>): ClCommandHandlerReturnPromisified<RC, C> {
 
 	}
 
 }
-
